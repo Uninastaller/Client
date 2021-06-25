@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace Client
 {
@@ -6,7 +8,10 @@ namespace Client
     {
         static void Main(string[] args)
         {
-            new StartClient();
+           // StartClient client = new StartClient();
+            Computer computer = new Computer("Asus","FG126",600);
+            string stringjson = JsonConvert.SerializeObject(computer);
+            Console.WriteLine(stringjson);
         }
     }
 }
