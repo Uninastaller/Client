@@ -2,6 +2,8 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
+
 
 namespace Client
 {
@@ -16,6 +18,7 @@ namespace Client
             Set();
             Create();
             Connect();
+            Send();
             Clean();
         }
         void Set()
@@ -38,9 +41,16 @@ namespace Client
             socket.Connect(remoteEP);
             Console.WriteLine("Socket connected to {0}",socket.RemoteEndPoint.ToString());
         }
+        void Send()
+        {
+            Computer computer = new Computer("Asus", "FG126", 600);
+            string stringjson = JsonSerializer.Serialize(computer);
+            byte[] msg = Encoding.ASCII.GetBytes(stringjson);
+            int bitesSend = socket.Send(msg);
+        }
         void Clean()
         {
-            socket.Shutdown(SocketShutdown.Send);
+            socket.Shutdown(SocketShutdown.Both);
             socket.Close();
         }
     }

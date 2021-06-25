@@ -8,17 +8,17 @@ namespace Client
 {
     class Computer
     {
-        public string _name { get; set; }
-        public string _version { get; set; }
-        public int _price { get; set; }
+        public string name { get; set; }
+        public string version { get; set; }
+        public int price { get; set; }
 
         
 
         public Computer(string name, string version, int price)
         {
-            _name = name;
-            _version = version;
-            _price = price;
+            this.name = name;
+            this.version = version;
+            this.price = price;
         }
 
        
