@@ -13,14 +13,22 @@ namespace Client
         private IPHostEntry host;
         private IPAddress ipAddress;
         private IPEndPoint remoteEP;
+
+        private byte[] msg;
+        private int identificator = 1;
+        private int amountOfBytes;
+        private byte[] buffer;
+        private string data = null;
         public StartClient()
         {
             Set();
             Create();
             Connect();
-            Send();
+            SendIdentificator();
+            //Send();
             Clean();
         }
+        
         void Set()
         {
             host = Dns.GetHostEntry("127.0.0.1");
@@ -30,10 +38,6 @@ namespace Client
         void Create()
         {
             socket = new Socket(ipAddress.AddressFamily,SocketType.Stream, ProtocolType.Tcp);
-            if (socket == null)
-            {
-                Console.WriteLine("Socket creation error");
-            }
             Console.WriteLine("Socket created");
         }
         void Connect()
@@ -41,11 +45,22 @@ namespace Client
             socket.Connect(remoteEP);
             Console.WriteLine("Socket connected to {0}",socket.RemoteEndPoint.ToString());
         }
-        void Send()
+        void SendIdentificator()
+        {
+            amountOfBytes = socket.Send(BitConverter.GetBytes(identificator));
+            buffer = new byte[10];
+            amountOfBytes = socket.Receive(buffer);
+            data = Encoding.ASCII.GetString(buffer, 0, amountOfBytes);
+            if(data.Equals("Send_Json"))
+            {
+                SendJson();
+            }
+        }
+        void SendJson()
         {
             Computer computer = new Computer("Asus", "FG126", 600);
             string stringjson = JsonSerializer.Serialize(computer);
-            byte[] msg = Encoding.ASCII.GetBytes(stringjson);
+            msg = Encoding.ASCII.GetBytes(stringjson);
             int bitesSend = socket.Send(msg);
         }
         void Clean()

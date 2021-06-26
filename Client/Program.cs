@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text.Json;
-
+using System.Threading;
 
 namespace Client
 {
@@ -8,7 +8,7 @@ namespace Client
     {
         static void Main(string[] args)
         {
-            StartClient client = new StartClient();
+            new StartClient();
         }
     }
 }
