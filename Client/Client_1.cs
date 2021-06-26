@@ -15,24 +15,18 @@ namespace Client
         private IPEndPoint remoteEP;
 
         private byte[] msg;
-        private int identificator = 1;
-        private int amountOfBytes;
-        private byte[] buffer = new byte[1024];
         private string data = null;
-        Computer computer;
+        private Computer computer;
         public Client_1()
         {
-
+            ClientStart();
         }
-        public void ClientStart()
+        void ClientStart()
         {
             Set();
             Create();
             Connect();
-            //Send();
-            //Clean();
-            _Send();
-            Console.ReadLine();
+            Loop();
         }
         
         void Set()
@@ -51,59 +45,71 @@ namespace Client
             socket.Connect(remoteEP);
             Console.WriteLine("Client 1, Socket connected to {0} THREAD[{1}]", socket.RemoteEndPoint.ToString(),Thread.CurrentThread.ManagedThreadId);
         }
-        void _Send()
+        void Loop()
         {
             while (true)
             {
-                Console.WriteLine("Write a request: ");
-                data = Console.ReadLine();
-                if (data.ToLower() == "send json")
-                {
-                    SendJson();
-                    Receive();
-                }
-                else
-                {
-                    buffer = Encoding.ASCII.GetBytes(data);
-                    socket.Send(buffer);
-                    Receive();
-                }
+                SendMessage();
+                ReceiveMessege();
             }
         }
-        void Receive()
+        void ReceiveMessege()
         {
-            buffer = new byte[1024];
-            amountOfBytes = socket.Receive(buffer);
-            msg = new byte[amountOfBytes];
-            Array.Copy(buffer, msg, amountOfBytes);
-            data = Encoding.ASCII.GetString(msg);
-            Console.WriteLine("[Received]  " + data);
+            byte[] buffer = new byte[2048];
+            int received = socket.Receive(buffer, SocketFlags.None);
+            if (received == 0) return;
+            byte[] msg = new byte[received];
+            Array.Copy(buffer, msg, received);
+            string data = Encoding.ASCII.GetString(msg);
+            Console.WriteLine(data);
 
             if (JsonValidation(data))
             {
-                Console.WriteLine("[SERVER] Valid json of Computer object was sent.");
+                Console.WriteLine("Valid json of Computer object was received from server.");
             }
 
+        }
+        void SendMessage()
+        {
+            Console.WriteLine("Write a request: ");
+            data = Console.ReadLine();
+
+            if (data.ToLower() == "send json")
+            {
+                SendJson();
+            }else SendString(data);
+
+            if (data.ToLower() == "exit")
+            {
+                Exit();
+            }
+        }
+        void Exit()
+        {
+            socket.Shutdown(SocketShutdown.Both);
+            socket.Close();
+            Environment.Exit(0);
+        }
+        void SendString(String data)
+        {
+            byte[] buffer = Encoding.ASCII.GetBytes(data);
+            socket.Send(buffer, 0, buffer.Length, SocketFlags.None);
         }
         void SendJson()
         {
             computer = new Computer("Asus", "FG126", 600);
             string stringjson = JsonSerializer.Serialize(computer);
             msg = Encoding.ASCII.GetBytes(stringjson);
-            amountOfBytes = socket.Send(msg);
+            socket.Send(msg);
         }
-        void Clean()
-        {
-            socket.Shutdown(SocketShutdown.Both);
-            socket.Close();
-        }
+       
         bool JsonValidation(String data)
         {
             try
             {
                 computer = JsonSerializer.Deserialize<Computer>(data);
             }
-            catch (System.Text.Json.JsonException)
+            catch (JsonException)
             {
                 return false;
             }
