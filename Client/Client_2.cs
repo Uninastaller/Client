@@ -3,32 +3,35 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-
+using System.Threading;
 
 namespace Client
 {
-    class StartClient
+    class Client_2
     {
         private Socket socket;
         private IPHostEntry host;
         private IPAddress ipAddress;
         private IPEndPoint remoteEP;
 
-        private byte[] msg;
-        private int identificator = 1;
+        private int identificator = 2;
         private int amountOfBytes;
         private byte[] buffer;
         private string data = null;
-        public StartClient()
+
+        Computer computer;
+
+        public Client_2()
+        {
+        }
+        public void ClientStart()
         {
             Set();
             Create();
             Connect();
-            SendIdentificator();
-            //Send();
+            Receive();
             Clean();
         }
-        
         void Set()
         {
             host = Dns.GetHostEntry("127.0.0.1");
@@ -37,36 +40,35 @@ namespace Client
         }
         void Create()
         {
-            socket = new Socket(ipAddress.AddressFamily,SocketType.Stream, ProtocolType.Tcp);
-            Console.WriteLine("Socket created");
+            socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            Console.WriteLine("Client 2, Socket created THREAD[{0}]", Thread.CurrentThread.ManagedThreadId);
         }
         void Connect()
         {
             socket.Connect(remoteEP);
-            Console.WriteLine("Socket connected to {0}",socket.RemoteEndPoint.ToString());
+            Console.WriteLine("Client 2, Socket connected to {0} THREAD[{1}]", socket.RemoteEndPoint.ToString(), Thread.CurrentThread.ManagedThreadId);
         }
-        void SendIdentificator()
+
+        void Receive()
         {
             amountOfBytes = socket.Send(BitConverter.GetBytes(identificator));
-            buffer = new byte[10];
+
+            buffer = new byte[1024];
             amountOfBytes = socket.Receive(buffer);
             data = Encoding.ASCII.GetString(buffer, 0, amountOfBytes);
-            if(data.Equals("Send_Json"))
-            {
-                SendJson();
-            }
+            computer = JsonSerializer.Deserialize<Computer>(data);
+            Console.WriteLine("Json received THREAD[{0}]", Thread.CurrentThread.ManagedThreadId);
+
+            Console.WriteLine(computer.name);
+           // CloseTheThread(connectId);
+
         }
-        void SendJson()
-        {
-            Computer computer = new Computer("Asus", "FG126", 600);
-            string stringjson = JsonSerializer.Serialize(computer);
-            msg = Encoding.ASCII.GetBytes(stringjson);
-            int bitesSend = socket.Send(msg);
-        }
+
         void Clean()
         {
             socket.Shutdown(SocketShutdown.Both);
             socket.Close();
         }
+
     }
 }
