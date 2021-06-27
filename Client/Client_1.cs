@@ -17,33 +17,33 @@ namespace Client
         private byte[] msg;
         private string data = null;
         private Computer computer;
-        public Client_1()
+        public Client_1(int port)
         {
-            ClientStart();
+            ClientStart(port);
         }
-        void ClientStart()
+        void ClientStart(int port)
         {
-            Set();
+            Set(port);
             Create();
             Connect();
             Loop();
         }
-        
-        void Set()
+
+        void Set(int port)
         {
             host = Dns.GetHostEntry("127.0.0.1");
             ipAddress = host.AddressList[0];
-            remoteEP = new IPEndPoint(ipAddress, 7777);
+            remoteEP = new IPEndPoint(ipAddress, port);
         }
         void Create()
         {
-            socket = new Socket(ipAddress.AddressFamily,SocketType.Stream, ProtocolType.Tcp);
+            socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             Console.WriteLine("Client 1, Socket created THREAD[{0}]", Thread.CurrentThread.ManagedThreadId);
         }
         void Connect()
         {
             socket.Connect(remoteEP);
-            Console.WriteLine("Client 1, Socket connected to {0} THREAD[{1}]", socket.RemoteEndPoint.ToString(),Thread.CurrentThread.ManagedThreadId);
+            Console.WriteLine("Client 1, Socket connected to {0} THREAD[{1}]", socket.RemoteEndPoint.ToString(), Thread.CurrentThread.ManagedThreadId);
         }
         void Loop()
         {
@@ -77,7 +77,8 @@ namespace Client
             if (data.ToLower() == "send json")
             {
                 SendJson();
-            }else SendString(data);
+            }
+            else SendString(data);
 
             if (data.ToLower() == "exit")
             {
@@ -102,7 +103,7 @@ namespace Client
             msg = Encoding.ASCII.GetBytes(stringjson);
             socket.Send(msg);
         }
-       
+
         bool JsonValidation(String data)
         {
             try

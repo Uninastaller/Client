@@ -9,7 +9,7 @@ namespace Client
         static void Main(string[] args)
         {
             
-            new Client_1();
+            new Client_1(7777);
 
         }
     }
