@@ -17,8 +17,9 @@ namespace Client
         private byte[] msg;
         private string data = null;
         private Computer computer;
-        public Client_1(int port)
+        public Client_1(String ipAddress, int port)
         {
+            GetIPAddress(ipAddress);
             ClientStart(port);
         }
         void ClientStart(int port)
@@ -28,11 +29,14 @@ namespace Client
             Connect();
             Loop();
         }
+        void GetIPAddress(String ipAddress)
+        {
+            host = Dns.GetHostEntry(ipAddress);
+            this.ipAddress = host.AddressList[0];
+        }
 
         void Set(int port)
         {
-            host = Dns.GetHostEntry("127.0.0.1");
-            ipAddress = host.AddressList[0];
             remoteEP = new IPEndPoint(ipAddress, port);
         }
         void Create()
@@ -42,7 +46,16 @@ namespace Client
         }
         void Connect()
         {
-            socket.Connect(remoteEP);
+            try
+            {
+                socket.Connect(remoteEP);
+            }
+            catch(SocketException)
+            {
+                Console.WriteLine("Failed to connect to server");
+                socket.Close();
+                Environment.Exit(0);
+            }
             Console.WriteLine("Client 1, Socket connected to {0} THREAD[{1}]", socket.RemoteEndPoint.ToString(), Thread.CurrentThread.ManagedThreadId);
         }
         void Loop()
