@@ -31,8 +31,16 @@ namespace Client
         }
         void GetIPAddress(String ipAddress)
         {
-            host = Dns.GetHostEntry(ipAddress);
-            this.ipAddress = host.AddressList[0];
+            try
+            {
+                host = Dns.GetHostEntry(ipAddress);
+                this.ipAddress = host.AddressList[0];
+            }catch (SocketException)
+            {
+                Console.WriteLine("Invalid IP address");
+                Environment.Exit(0);
+
+            }
         }
 
         void Set(int port)
