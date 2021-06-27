@@ -37,9 +37,7 @@ namespace Client
                 this.ipAddress = host.AddressList[0];
             }catch (SocketException)
             {
-                Console.WriteLine("Invalid IP address");
-                Environment.Exit(0);
-
+                ErrorWithSocketStarting("Invalid ip address", false);
             }
         }
 
@@ -49,7 +47,13 @@ namespace Client
         }
         void Create()
         {
-            socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            try
+            {
+                socket = new Socket(ipAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            }catch (SocketException)
+            {
+                ErrorWithSocketStarting("Failed to create socket", false);
+            }
             Console.WriteLine("Client 1, Socket created THREAD[{0}]", Thread.CurrentThread.ManagedThreadId);
         }
         void Connect()
@@ -60,9 +64,7 @@ namespace Client
             }
             catch(SocketException)
             {
-                Console.WriteLine("Failed to connect to server");
-                socket.Close();
-                Environment.Exit(0);
+                ErrorWithSocketStarting("Failed to connect to server", true);
             }
             Console.WriteLine("Client 1, Socket connected to {0} THREAD[{1}]", socket.RemoteEndPoint.ToString(), Thread.CurrentThread.ManagedThreadId);
         }
@@ -136,6 +138,12 @@ namespace Client
                 return false;
             }
             return true;
+        }
+        void ErrorWithSocketStarting(String message, bool socketClose)
+        {
+            if (socketClose) socket.Close();
+            Console.WriteLine(message);
+            Environment.Exit(0);
         }
     }
 }
